@@ -1,7 +1,85 @@
 ---
-title: "gaominder-dplyr"
+title: "gapminder-dplyr"
 author: "Sofia"
 date: "19/6/2019"
 output: html_document
 ---
+
+```{r}
+library(tidyverse)
+```
+
+Load data
+```{r}
+gapminder <- read_csv("https://raw.githubusercontent.com/OHI-Science/data-science-training/master/data/gapminder.csv")
+```
+
+dypler functions
+```{r}
+#--------- Filtering
+filter(gapminder, lifeExp<25)
+
+# Just by countries
+filter(gapminder, country=="Colombia", lifeExp<70)
+
+Brazil_life_exp <- filter(gapminder, country=="Brazil", year>1987, year<2007)  # we can also use & instead of the comma
+
+Brazil_life_exp_mean <- mean(Brazil_life_exp$lifeExp)
+
+#----------- Selecting
+Keep_some<-select(gapminder, year, country, lifeExp) 
+Drop_some <- select(gapminder, -continent, -gdpPercap, -pop) #Same resutls as previous line
+
+#----------- Filtering and select at the same time
+gap_Cambodia <- filter(gapminder, country=="Cambodia")
+gap_Cambodia2 <- select(gap_Cambodia, -continent, -lifeExp)
+
+#----------- Pipe %>% operator to make things cleaner ctrl+shift+m == take XXX and then do XX
+gap_Colombia <- filter(gapminder, country=="Colombia")%>% #and then
+  select(-continent, -lifeExp)
+
+gap_Colombia2 <- gapminder%>% # Take the dataframe
+  filter(country=="Colombia")%>% #and then
+  select(-continent, -lifeExp)
+
+#--------- Mutate --- add extra columns
+GDP <- gapminder %>% 
+  mutate(gdp=pop*gdpPercap)
+
+Asia_countries <- gapminder %>% 
+  filter(continent=="Asia", 
+         year==2007)%>%
+  mutate(Asia_pop_thousands=pop/1000) %>% 
+  select(country, year, Asia_pop_thousands)
+  
+#------- Group_by
+Cont_pop_continent<-gapminder %>% 
+  filter(year==2002) %>% 
+  group_by(continent) %>% 
+  mutate(cont_pop= sum(pop))
+ 
+Cont_pop_continent_nicer<-gapminder %>% #<<<<<<THIS IS MORE ORGINIZE!!
+  filter(year==2002) %>% 
+  group_by(continent) %>% 
+  summarise(cont_pop=sum(pop))
+
+Cont_pop_year<- gapminder %>% 
+  group_by(continent, year) %>% 
+  summarise(cont_pop=sum(pop)) %>% 
+  ungroup() # Good practice to add ungroup after you do a grouping variable
+
+#---------- arrange
+Order<- gapminder %>% 
+  group_by(continent, year) %>% 
+  summarise(cont_pop=sum(pop)) %>% 
+  arrange(-year)
+
+Max_gdp<-gapminder %>% 
+  mutate(gdp=gdpPercap*pop) %>% 
+  group_by(continent) %>% 
+  mutate(max_gdp=max(gdp)) %>% 
+  filter(gdp==max_gdp)
+
+```
+
 
